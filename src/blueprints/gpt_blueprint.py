@@ -3,26 +3,27 @@ from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
-from src.services.gpt_service import GPTService
-from src.services.web_scraper.web_scraper_service import WebScraperService
+from src.service.training_service import TrainingService
+from src.models.website_training_request import WebsiteTrainingRequest
 
 gpt_bp = Blueprint('gpt_blueprint', __name__)
 
 
 @gpt_bp.route('/upload-files', methods=['POST'])
 @inject
-def upload_files(gpt_service: GPTService = Provide[Container.gpt_service]):
+def upload_files(training_service: TrainingService = Provide[Container.training_service]):
     files = request.files.getlist('files')
 
-    output = gpt_service.upload_files(files)
+    output = training_service.train_files_data(files)
 
     return jsonify({'result': output})
 
 
-@gpt_bp.route('/scrape-website', methods=['GET'])
+@gpt_bp.route('/scrape-website', methods=['POST'])
 @inject
-def scrape_website(web_scraper_service: WebScraperService = Provide[Container.web_scraper_service]):
-    url = request.args.get("url")
-    output = web_scraper_service.scrape_website(url, True)
+def scrape_website(training_service: TrainingService = Provide[Container.training_service]):
+    website_training_request = WebsiteTrainingRequest.from_dict(request.get_json())
+
+    output = training_service.train_website_data(website_training_request)
 
     return jsonify({'result': output})

@@ -1,4 +1,4 @@
-from src.services.base_service import BaseService
+from src.service.base_service import BaseService
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
 import docx

@@ -50,3 +50,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+imagine-docs-api.iml
+
+.DS_Store
+.vscode/

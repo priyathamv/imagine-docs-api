@@ -1,7 +1,7 @@
 import os.path
 
-from src.services.base_service import BaseService
-from src.services.file_parser_service import FileParserService
+from src.service.base_service import BaseService
+from src.service.file_parser_service import FileParserService
 
 
 class GPTService(BaseService):

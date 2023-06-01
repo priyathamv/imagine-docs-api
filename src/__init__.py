@@ -13,6 +13,7 @@ def create_app():
     # config_type = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
     # app.config.from_object(config_type)
 
+    # Dependency injection container
     container = Container()
     app.container = container
 
