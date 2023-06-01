@@ -21,15 +21,6 @@ class Container(containers.DeclarativeContainer):
     # Configurations
     load_dotenv()
 
-    # @providers.Singleton
-    # def supabase_client(self) -> SupabaseClient:
-    #     return SupabaseClient(os.environ.get(SUPABASE_URL), os.environ.get(SUPABASE_KEY))
-    #
-    # @providers.Singleton
-    # @providers.Factory
-    # def supabase(self, client: SupabaseClient) -> Client:
-    #     return client.get_instance()
-
     supabase_client: SupabaseClient = providers.Singleton(SupabaseClient,
                                                           os.environ.get(SUPABASE_URL),
                                                           os.environ.get(SUPABASE_KEY))
