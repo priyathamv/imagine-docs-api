@@ -1,16 +1,15 @@
-import json
-
 from postgrest import APIResponse
-from supabase import Client
+
+from src.configuration.supabase_client import SupabaseClient
 
 from src.service.base_service import BaseService
 
 
 class BaseRepository(BaseService):
 
-    def __init__(self, supabase: Client, table):
+    def __init__(self, supabase_client: SupabaseClient, table):
         super().__init__()
-        self.supabase = supabase
+        self.supabase = supabase_client.get_instance()
         self.table = table
 
     def fetch_by_id(self, id: str) -> APIResponse:
