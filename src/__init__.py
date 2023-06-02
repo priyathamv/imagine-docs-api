@@ -34,7 +34,7 @@ def register_error_handlers(app):
 # import os
 
 
-# os.environ['OPENAI_API_KEY'] = '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'
+# os.environ['OPENAI_API_KEY'] = ''
 
 # # num_output: Number of outputs for the LLM
 # num_outputs=100
