@@ -13,6 +13,13 @@ class TrainingService(BaseService):
 
     def train_files_data(self, files):
         self.logger.debug('Uploading files...')
+        # Step 1: Upload the files to Supabase storage and get the links
+        # Step 2: Update the project and source_metadata tables in Supabase with the details
+        #         project(projectId, name, owner_id, status=IN_PROGRESS)
+        #         source_metadata({id, project_id, type: file, path: location in Supabase}, {type: website, path: link of the site, metadata: {}})
+        # Step 3: Extract the text/embedding from the files
+        # Step 4: Save it in document/section tables in Supabase
+        # Step 5: Update the project status to COMPLETED
 
         return self.gpt_service.upload_files(files)
 
