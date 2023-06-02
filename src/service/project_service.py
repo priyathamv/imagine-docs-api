@@ -9,10 +9,12 @@ class ProjectService(BaseService):
         self.project_repository = project_repository
 
     def find_by_id(self, id: str):
-        return self.project_repository.fetch_by_id(id)
+        response = self.project_repository.fetch_by_id(id)
+        return response.data
 
     def find_all(self):
-        return self.project_repository.fetch_all()
+        response = self.project_repository.fetch_all()
+        return response.data
 
     def save(self, create_project_request):
         save_response = self.project_repository.insert(create_project_request)
