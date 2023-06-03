@@ -1,8 +1,8 @@
 from flask import Flask
-# import os
 
-from src.blueprints import register_blueprints
+from src.blueprint import register_blueprints
 from src.containers import Container
+from src.exception import global_exception_handler
 
 
 # Application Factory
@@ -27,7 +27,9 @@ def create_app():
 
 
 def register_error_handlers(app):
-    pass
+    @app.errorhandler(Exception)
+    def error_handler(error):
+        return global_exception_handler(error)
 
 # from llama_index import GPTSimpleVectorIndex, SimpleDirectoryReader, LLMPredictor, ServiceContext
 # from langchain import OpenAI

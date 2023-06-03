@@ -1,7 +1,7 @@
 from src.service.base_service import BaseService
 from src.service.gpt_service import GPTService
 from src.service.web_scraper.web_scraper_service import WebScraperService
-from src.models.website_training_request import WebsiteTrainingRequest
+from src.dto.website_training_request import WebsiteTrainingRequest
 
 
 class TrainingService(BaseService):

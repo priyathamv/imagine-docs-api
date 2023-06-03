@@ -8,13 +8,13 @@ import tiktoken
 import openai
 # from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 
-from src.constants import __init__
+from src.constant import __init__
 from src.service.base_service import BaseService
-from src.models.rule import Rule
-from src.models.rule_type import RuleType
-from src.database.tables.document import Document
-from src.database.tables.section import Section
-from src.database.tables.source_type import SourceType
+from src.dto.rule import Rule
+from src.dto.rule_type import RuleType
+from src.model.tables.document import Document
+from src.model.tables.section import Section
+from src.model.tables.source_type import SourceType
 
 
 class WebScraperService(BaseService):

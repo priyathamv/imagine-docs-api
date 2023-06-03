@@ -1,8 +1,9 @@
 from postgrest import APIResponse
-
 from src.configuration.supabase_client import SupabaseClient
 
 from src.service.base_service import BaseService
+from src.dto.project.create_project_dto import CreateProjectDTO
+from src.dto.project.update_project_dto import UpdateProjectDTO
 
 
 class BaseRepository(BaseService):
@@ -18,41 +19,13 @@ class BaseRepository(BaseService):
     def fetch_all(self) -> APIResponse:
         return self.supabase.table(self.table).select('*').execute()
 
-    def insert(self, data) -> APIResponse:
-        return self.supabase.table(self.table).insert(data).execute()
+    def insert(self, data: CreateProjectDTO) -> APIResponse:
+        data_str = CreateProjectDTO.to_dict(data)
+        return self.supabase.table(self.table).insert(data_str).execute()
 
-    def update_by_id(self, id, data) -> APIResponse:
-        return self.supabase.table(self.table).update(data).eq('id', id).execute()
+    def update_by_id(self, id, data: UpdateProjectDTO) -> APIResponse:
+        data_str = UpdateProjectDTO.to_dict(data)
+        return self.supabase.table(self.table).update(data_str).eq('id', id).execute()
 
     def delete_by_id(self, id) -> APIResponse:
         return self.supabase.table(self.table).delete().eq('id', id).execute()
-
-# # Fetching
-# data1 = supabase.table('documents').select('*').execute()
-# data2 = supabase.table('documents').select('id, name').eq('name', 'hello').execute()
-# print(data1)
-#
-# # Inserting
-# supabase.table('documents').insert({'name': 'Priyatham'}).execute()
-#
-# # Updating name where id is 1
-# supabase.table('documents').update({'name': 'updated name'}).eq('id', 1).execute()
-#
-# # Deleting
-# supabase.table('documents').delete().eq('id', 1).execute()
-#
-#
-# # Authentication
-# # Sign Up
-# user = supabase.auth.sign_up(email='', password='')
-#
-# # Sign In
-# from gotrue.errors import AuthApiError
-# session = None
-# try:
-#     session = supabase.auth.sign_in_with_password(email='email', password='password')
-# except AuthApiError:
-#     print('Invalid credentials')
-#
-#
-# supabase.auth.sign_out()

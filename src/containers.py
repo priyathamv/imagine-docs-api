@@ -12,13 +12,13 @@ from src.repository.project_repository import ProjectRepository
 from src.repository.document_repository import DocumentRepository
 from src.repository.section_repository import SectionRepository
 from src.configuration.supabase_client import SupabaseClient
-from src.constants import SUPABASE_URL, SUPABASE_KEY
+from src.constant import SUPABASE_URL, SUPABASE_KEY
 
 
 class Container(containers.DeclarativeContainer):
     load_dotenv()
 
-    wiring_config = containers.WiringConfiguration(packages=['.blueprints'])
+    wiring_config = containers.WiringConfiguration(packages=['.blueprint'])
 
     # Configurations
     supabase_client: SupabaseClient = providers.Singleton(SupabaseClient,

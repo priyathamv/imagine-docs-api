@@ -1,11 +1,15 @@
+import logging
 from flask import request, Blueprint
 from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
+from src.exception import InvalidRequestException
 from src.service.project_service import ProjectService
-from src.models.project.create_project_request import CreateProjectRequest
-from src.models.project.update_project_request import UpdateProjectRequest
+from src.dto.project.create_project_dto import CreateProjectDTO
+from src.dto.project.update_project_dto import UpdateProjectDTO
+
+log = logging.getLogger(__name__)
 
 project_bp = Blueprint('project_blueprint', __name__)
 
@@ -29,7 +33,8 @@ def find_project_by_id(id, project_service: ProjectService = Provide[Container.p
 @project_bp.route('/', methods=['POST'])
 @inject
 def save_project(project_service: ProjectService = Provide[Container.project_service]):
-    create_project_request = request.get_json()
+    create_project_request = CreateProjectDTO.from_dict(request.get_json())
+
     saved_project = project_service.save(create_project_request)
 
     return jsonify(saved_project)
@@ -38,7 +43,8 @@ def save_project(project_service: ProjectService = Provide[Container.project_ser
 @project_bp.route('/', methods=['PUT'])
 @inject
 def update_project(project_service: ProjectService = Provide[Container.project_service]):
-    update_project_request = request.get_json()
+    update_project_request = UpdateProjectDTO.from_dict(request.get_json())
+
     updated_project = project_service.update(update_project_request)
 
     return jsonify(updated_project)

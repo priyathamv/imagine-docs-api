@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
-from src.database.tables.source_type import SourceType
+from src.model.tables.source_type import SourceType
 
 
 @dataclass_json

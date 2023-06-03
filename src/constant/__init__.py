@@ -15,3 +15,8 @@ USER_AGENTS = [
 # Supabase
 SUPABASE_URL = 'SUPABASE_URL'
 SUPABASE_KEY = 'SUPABASE_KEY'
+
+# Exception messages
+RESOURCE_NOT_FOUND = 'Resource not found'
+INVALID_REQUEST = 'Invalid request'
+INTERNAL_SERVER_ERROR = 'Internal Server Error'
