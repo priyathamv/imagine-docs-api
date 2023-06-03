@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
 from src.service.training_service import TrainingService
-from src.dto.website_training_request import WebsiteTrainingRequest
+from src.dto.core.website_training_request import WebsiteTrainingRequest
 
 gpt_bp = Blueprint('gpt_blueprint', __name__)
 

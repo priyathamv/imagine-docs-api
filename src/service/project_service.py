@@ -1,7 +1,7 @@
 from src.service.base_service import BaseService
 from src.repository.project_repository import ProjectRepository
-from src.dto.project.create_project_dto import CreateProjectDTO
-from src.dto.project.update_project_dto import UpdateProjectDTO
+from src.dto.project.create_project_dto import CreateProjectRequest
+from src.dto.project.update_project_dto import UpdateProjectRequest
 from src.exception import RecordNotFoundException, EntitySaveException, EntityUpdateException
 
 
@@ -23,7 +23,7 @@ class ProjectService(BaseService):
         find_all_response = self.project_repository.fetch_all()
         return find_all_response.data
 
-    def save(self, create_project_request: CreateProjectDTO):
+    def save(self, create_project_request: CreateProjectRequest):
         save_response = self.project_repository.insert(create_project_request)
 
         if save_response.data:
@@ -31,7 +31,7 @@ class ProjectService(BaseService):
 
         raise EntitySaveException('Project saving failed' + str(save_response))
 
-    def update(self, update_project_request: UpdateProjectDTO):
+    def update(self, update_project_request: UpdateProjectRequest):
         update_response = self.project_repository.update_by_id(update_project_request.id, update_project_request)
 
         if update_response.data:

@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import List
-from urllib.parse import urlparse, urljoin, urldefrag
+from urllib.parse import urlparse, urldefrag
 import trafilatura
 from trafilatura.settings import use_config
 from playwright.sync_api import sync_playwright
@@ -10,11 +10,9 @@ import openai
 
 from src.constant import __init__
 from src.service.base_service import BaseService
-from src.dto.rule import Rule
-from src.dto.rule_type import RuleType
-from src.model.tables.document import Document
-from src.model.tables.section import Section
-from src.model.tables.source_type import SourceType
+from src.dto.core.rule import Rule
+from src.dto.core.rule_type import RuleType
+from src.model.data_source import Content
 
 
 class WebScraperService(BaseService):
@@ -66,7 +64,7 @@ class WebScraperService(BaseService):
                         page.goto(link, wait_until=__init__.NETWORK_IDLE)
 
                     cur_content = page.content()
-                    document: Document = Document(source_link=link, source_type=SourceType.WEBSITE)
+                    # document: Document = Document(source_link=link, source_type=SourceType.WEBSITE)
                     # clean_links = self.get_links_from_html(cur_content, domain_name)
 
                     content_to_token_tuples: List[(str, int)] = []
@@ -84,13 +82,13 @@ class WebScraperService(BaseService):
                         content_to_token_tuples += self.get_content_to_token_tuples(page_content, 500, tokenizer)
 
                         if len(content_to_token_tuples) > 0:
-                            Document(link, SourceType.WEBSITE)
+                            # Document(link, SourceType.WEBSITE)
                             for content_to_token_tuple in content_to_token_tuples:
                                 content = content_to_token_tuple[0]
                                 token_count = content_to_token_tuple[1]
                                 embedding = openai.Embedding.create(input=content, engine='text-embedding-ada-002')['data'][0]['embedding']
 
-                                Section(document_id=1, content=content, token_count=token_count, embedding=embedding)
+                                Content(data_source_id=1, content=content, token_count=token_count, embedding=embedding)
 
                     # for cur_link in clean_links:
                     #     if cur_link not in links:
