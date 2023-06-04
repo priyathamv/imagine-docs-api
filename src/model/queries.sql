@@ -1,14 +1,14 @@
 create extension if not exists vector with schema public
 
-create table "public"."document" (
+create table "public"."data_source" (
     id bigserial primary key,
     source_link text not null unique,
     source_type text not null
 )
 
-create table "public"."section" (
+create table "public"."content" (
     id bigserial primary key,
-    document_id bigint not null references public.document on delete cascade,
+    data_source_id bigint not null references public.data_source on delete cascade,
     content text,
     token_count int,
     embedding vector(1536)

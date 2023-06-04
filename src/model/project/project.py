@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
-
 from dataclasses_json import dataclass_json
 
 
@@ -10,5 +8,5 @@ class Project:
     id: int
     name: str
     owner_id: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str

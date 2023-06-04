@@ -18,7 +18,7 @@ class TrainingService(BaseService):
         #         project(projectId, name, owner_id, status=IN_PROGRESS)
         #         source_metadata({id, project_id, type: file, path: location in Supabase}, {type: website, path: link of the site, metadata: {}})
         # Step 3: Extract the text/embedding from the files
-        # Step 4: Save it in document/section tables in Supabase
+        # Step 4: Save it in data_source/content tables in Supabase
         # Step 5: Update the project status to COMPLETED
 
         return self.file_service.upload_files(files)

@@ -64,7 +64,7 @@ class WebScraperService(BaseService):
                         page.goto(link, wait_until=__init__.NETWORK_IDLE)
 
                     cur_content = page.content()
-                    # document: Document = Document(source_link=link, source_type=SourceType.WEBSITE)
+                    # data_source: DataSource = DataSource(source_link=link, source_type=SourceType.WEBSITE)
                     # clean_links = self.get_links_from_html(cur_content, domain_name)
 
                     content_to_token_tuples: List[(str, int)] = []
@@ -82,11 +82,13 @@ class WebScraperService(BaseService):
                         content_to_token_tuples += self.get_content_to_token_tuples(page_content, 500, tokenizer)
 
                         if len(content_to_token_tuples) > 0:
-                            # Document(link, SourceType.WEBSITE)
+                            # DataSource(link, SourceType.WEBSITE)
                             for content_to_token_tuple in content_to_token_tuples:
                                 content = content_to_token_tuple[0]
                                 token_count = content_to_token_tuple[1]
-                                embedding = openai.Embedding.create(input=content, engine='text-embedding-ada-002')['data'][0]['embedding']
+                                embedding = \
+                                openai.Embedding.create(input=content, engine='text-embedding-ada-002')['data'][0][
+                                    'embedding']
 
                                 Content(data_source_id=1, content=content, token_count=token_count, embedding=embedding)
 

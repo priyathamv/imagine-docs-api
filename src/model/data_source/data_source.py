@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
-from datetime import datetime
 from typing import List
 
 from src.dto.core.rule import Rule
@@ -20,5 +19,5 @@ class DataSource:
     is_auth_enabled: bool
     is_recursive: bool
     rules: List[Rule]
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
