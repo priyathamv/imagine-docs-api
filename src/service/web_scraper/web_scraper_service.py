@@ -12,7 +12,7 @@ from src.constant import __init__
 from src.service.base_service import BaseService
 from src.dto.core.rule import Rule
 from src.dto.core.rule_type import RuleType
-from src.model.data_source import Content
+from src.model.data_source.content import Content
 
 
 class WebScraperService(BaseService):

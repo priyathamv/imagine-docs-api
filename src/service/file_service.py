@@ -4,7 +4,7 @@ from src.service.base_service import BaseService
 from src.service.file_parser_service import FileParserService
 
 
-class GPTService(BaseService):
+class FileService(BaseService):
 
     def __init__(self, file_parser: FileParserService) -> None:
         self.file_parser = file_parser

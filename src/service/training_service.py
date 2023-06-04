@@ -1,13 +1,13 @@
 from src.service.base_service import BaseService
-from src.service.gpt_service import GPTService
+from src.service.file_service import FileService
 from src.service.web_scraper.web_scraper_service import WebScraperService
 from src.dto.core.website_training_request import WebsiteTrainingRequest
 
 
 class TrainingService(BaseService):
 
-    def __init__(self, gpt_service: GPTService, web_scraper_service: WebScraperService):
-        self.gpt_service = gpt_service
+    def __init__(self, file_service: FileService, web_scraper_service: WebScraperService):
+        self.file_service = file_service
         self.web_scraper_service = web_scraper_service
         super().__init__()
 
@@ -21,7 +21,7 @@ class TrainingService(BaseService):
         # Step 4: Save it in document/section tables in Supabase
         # Step 5: Update the project status to COMPLETED
 
-        return self.gpt_service.upload_files(files)
+        return self.file_service.upload_files(files)
 
     def train_website_data(self, training_request: WebsiteTrainingRequest):
         self.logger.debug('Training website data...')
