@@ -28,8 +28,8 @@ class ProjectService(BaseService):
         return Project.schema().load(find_all_response.data, many=True)
 
     def save(self, create_project_request: CreateProjectRequest) -> Project:
-        create_project_json = CreateProjectRequest.to_json(create_project_request)
-        save_response = self.project_repository.insert(create_project_json)
+        create_project_dict = CreateProjectRequest.to_dict(create_project_request)
+        save_response = self.project_repository.insert(create_project_dict)
 
         if save_response.data:
             return Project.from_dict(save_response.data[0])
@@ -37,8 +37,8 @@ class ProjectService(BaseService):
         raise EntitySaveException('Project saving failed' + str(save_response))
 
     def update(self, update_project_request: UpdateProjectRequest) -> Project:
-        update_project_json = UpdateProjectRequest.to_json(update_project_request)
-        update_response = self.project_repository.update_by_id(update_project_request.id, update_project_json)
+        update_project_dict = UpdateProjectRequest.to_dict(update_project_request)
+        update_response = self.project_repository.update_by_id(update_project_request.id, update_project_dict)
 
         if update_response.data:
             return Project.from_dict(update_response.data[0])
