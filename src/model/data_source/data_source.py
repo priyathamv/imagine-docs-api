@@ -10,13 +10,13 @@ from src.model.data_source.source_type import SourceType
 @dataclass_json
 @dataclass
 class DataSource:
-    id: int
-    project_id: int
+    id: str
+    project_id: str
     source_type: SourceType
     source_link: str
     content: str
     status: JobStatus
-    is_auth_enabled: bool
+    is_auth_enabled: bool # Need to revisit how to handle authenticated websites
     is_recursive: bool
     rules: List[Rule]
     created_at: str

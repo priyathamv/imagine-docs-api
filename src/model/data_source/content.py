@@ -6,7 +6,7 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class Content:
-    data_source_id: int
+    data_source_id: str
     content: str
     token_count: int
     embedding: List[float]

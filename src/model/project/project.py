@@ -5,7 +5,7 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class Project:
-    id: int
+    id: str
     name: str
     owner_id: str
     created_at: str

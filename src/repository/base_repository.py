@@ -19,13 +19,11 @@ class BaseRepository(BaseService):
     def fetch_all(self) -> APIResponse:
         return self.supabase.table(self.table).select('*').execute()
 
-    def insert(self, data: CreateProjectRequest) -> APIResponse:
-        data_str = CreateProjectRequest.to_dict(data)
-        return self.supabase.table(self.table).insert(data_str).execute()
+    def insert(self, data) -> APIResponse:
+        return self.supabase.table(self.table).insert(data).execute()
 
-    def update_by_id(self, id, data: UpdateProjectRequest) -> APIResponse:
-        data_str = UpdateProjectRequest.to_dict(data)
-        return self.supabase.table(self.table).update(data_str).eq('id', id).execute()
+    def update_by_id(self, id, data) -> APIResponse:
+        return self.supabase.table(self.table).update(data).eq('id', id).execute()
 
     def delete_by_id(self, id) -> APIResponse:
         return self.supabase.table(self.table).delete().eq('id', id).execute()

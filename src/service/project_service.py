@@ -26,10 +26,10 @@ class ProjectService(BaseService):
     def find_all(self) -> List[Project]:
         find_all_response = self.project_repository.fetch_all()
         return Project.schema().load(find_all_response.data, many=True)
-        # list(map(Project.from_dict, find_all_response.data))
 
     def save(self, create_project_request: CreateProjectRequest) -> Project:
-        save_response = self.project_repository.insert(create_project_request)
+        create_project_json = CreateProjectRequest.to_json(create_project_request)
+        save_response = self.project_repository.insert(create_project_json)
 
         if save_response.data:
             return Project.from_dict(save_response.data[0])
@@ -37,7 +37,8 @@ class ProjectService(BaseService):
         raise EntitySaveException('Project saving failed' + str(save_response))
 
     def update(self, update_project_request: UpdateProjectRequest) -> Project:
-        update_response = self.project_repository.update_by_id(update_project_request.id, update_project_request)
+        update_project_json = UpdateProjectRequest.to_json(update_project_request)
+        update_response = self.project_repository.update_by_id(update_project_request.id, update_project_json)
 
         if update_response.data:
             return Project.from_dict(update_response.data[0])
