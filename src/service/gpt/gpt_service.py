@@ -2,7 +2,6 @@ import os
 from typing import List
 import tiktoken
 import openai
-from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 
 from src.constant import OPENAI_DEPLOYMENT_NAME, OPENAI_MODEL
 from src.service.base_service import BaseService
