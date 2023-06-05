@@ -4,11 +4,8 @@ from urllib.parse import urlparse, urldefrag
 import trafilatura
 from trafilatura.settings import use_config
 from playwright.sync_api import sync_playwright
-import tiktoken
-import openai
-# from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 
-from src.constant import __init__
+from src.constant import USER_AGENTS, NETWORK_IDLE, RESOURCE_EXCLUSIONS
 from src.service.base_service import BaseService
 from src.dto.core.rule import Rule
 from src.dto.core.rule_type import RuleType
@@ -24,14 +21,12 @@ class WebScraperService(BaseService):
     def scrape_website(self, url, is_auth_enabled, is_recursive, rules):
         domain_name = self.extract_domain_name(url)
 
-        tokenizer = tiktoken.get_encoding("cl100k_base")
-
         with sync_playwright() as p:
             # Launching a headless browser
             browser = p.chromium.launch(headless=False, slow_mo=50)
 
             # Picking a User-Agent from the available pool
-            user_agent = __init__.USER_AGENTS[1]  # index % len(constant.USER_AGENTS)]
+            user_agent = USER_AGENTS[1]  # index % len(constant.USER_AGENTS)]
 
             # Creating a new browser context and opening a new page
             context = browser.new_context(user_agent=user_agent)
@@ -39,14 +34,14 @@ class WebScraperService(BaseService):
 
             # links = [url]
             links = [
-                # 'https://dx.walmart.com/documents/product/DX.io/How-to-Contribute-to-DX-io-izdpqsncp9',
-                # 'https://dx.walmart.com/documents/product/Starter%20Kit%20Contributor/overview',
-                # 'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/overview',
-                # 'https://dx.walmart.com/documents/product/DX.io/overview',
+                'https://dx.walmart.com/documents/product/DX.io/How-to-Contribute-to-DX-io-izdpqsncp9',
+                'https://dx.walmart.com/documents/product/Starter%20Kit%20Contributor/overview',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/overview',
+                'https://dx.walmart.com/documents/product/DX.io/overview',
                 'https://dx.walmart.com/documents/product/Starter%20Kit%20Contributor/857385746'
             ]
             visited_links = []
-            # link_to_text_dict = dict()
+            link_to_text_dict = dict()
             for index, link in enumerate(links):
                 if link not in visited_links:
                     # TODO: not working (Blocking resources like image, video, css to improve performance)
@@ -55,19 +50,19 @@ class WebScraperService(BaseService):
                     # Handling authentication in the first request if needed
                     if is_auth_enabled == True and index == 0:
                         # TODO: handle invalid tags/credentials
-                        page.goto(link, wait_until=__init__.NETWORK_IDLE)
+                        page.goto(link, wait_until=NETWORK_IDLE)
                         page.fill("#username1", "****")
                         page.fill("#password", "****")
                         page.get_by_title("SIGN IN").click()
-                        page.wait_for_load_state(__init__.NETWORK_IDLE)
+                        page.wait_for_load_state(NETWORK_IDLE)
                     else:
-                        page.goto(link, wait_until=__init__.NETWORK_IDLE)
+                        page.goto(link, wait_until=NETWORK_IDLE)
 
                     cur_content = page.content()
                     # data_source: DataSource = DataSource(source_link=link, source_type=SourceType.WEBSITE)
                     # clean_links = self.get_links_from_html(cur_content, domain_name)
 
-                    content_to_token_tuples: List[(str, int)] = []
+                    # content_to_token_tuples: List[(str, int)] = []
 
                     if self.is_link_valid_to_extract_text(link, rules):
                         # TODO: Other alternatives to consider
@@ -78,19 +73,7 @@ class WebScraperService(BaseService):
                         https://github.com/buriy/python-readability
                         '''
                         page_content: str = self.extract_using_trafilatura(cur_content)
-                        # link_to_text_dict[link] = page_content
-                        content_to_token_tuples += self.get_content_to_token_tuples(page_content, 500, tokenizer)
-
-                        if len(content_to_token_tuples) > 0:
-                            # DataSource(link, SourceType.WEBSITE)
-                            for content_to_token_tuple in content_to_token_tuples:
-                                content = content_to_token_tuple[0]
-                                token_count = content_to_token_tuple[1]
-                                embedding = \
-                                openai.Embedding.create(input=content, engine='text-embedding-ada-002')['data'][0][
-                                    'embedding']
-
-                                Content(data_source_id=1, content=content, token_count=token_count, embedding=embedding)
+                        link_to_text_dict[link] = page_content
 
                     # for cur_link in clean_links:
                     #     if cur_link not in links:
@@ -98,7 +81,7 @@ class WebScraperService(BaseService):
 
                     visited_links.append(link)
 
-            return {'links': links}
+            return link_to_text_dict
 
     # Check if the link passed is a valid one to consider for text extraction
     def is_link_valid_to_extract_text(self, link: str, rules: List[Rule]) -> bool:
@@ -120,49 +103,9 @@ class WebScraperService(BaseService):
                         return False if rule.rule_type == RuleType.EXCLUDE else True
         return False
 
-    # Split the text into chunks of a maximum number of tokens
-    def get_content_to_token_tuples(self, text: str, max_tokens: int, tokenizer) -> List[str]:
-        # OpenAI recommends replacing newlines with spaces
-        text: str = self.replace_newlines_with_spaces(text)
-
-        # Split the text into sentences
-        sentences: List[str] = text.split('. ')
-
-        # Get the number of tokens for each sentence
-        # Space is prepended to ensure proper tokenization as some tokenizers treat the first char in a diff way
-        tokens: List[int] = [len(tokenizer.encode(' ' + sentence)) for sentence in sentences]
-
-        tokens_so_far = 0
-        chunks: List[(str, int)] = []
-        chunk: List[str] = []
-
-        # Loop through the sentences and tokens joined together in a tuple
-        for sentence, token in zip(sentences, tokens):
-            if tokens_so_far + token > max_tokens:
-                chunks.append(('. '.join(chunk) + '.', tokens_so_far))
-                chunk = []
-                tokens_so_far = 0
-
-            if token > max_tokens:
-                continue
-
-            chunk.append(sentence)
-            tokens_so_far += token + 1
-
-        if chunk:
-            chunks.append(('. '.join(chunk) + '.', tokens_so_far))
-
-        return chunks
-
-    def replace_newlines_with_spaces(self, text: str) -> str:
-        return text.replace('\n', ' ') \
-            .replace('\\n', ' ') \
-            .replace('  ', ' ') \
-            .replace('  ', ' ')
-
     def handle_route(self, route) -> None:
         # if route.request.resource_type == "document":
-        if route.request.resource_type in __init__.RESOURCE_EXCLUSIONS:
+        if route.request.resource_type in RESOURCE_EXCLUSIONS:
             print(f'Blocking request to: {route.request.url}')
             route.abort()
         else:
