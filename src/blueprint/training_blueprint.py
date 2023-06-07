@@ -9,12 +9,15 @@ from src.dto.core.website_training_request import WebsiteTrainingRequest
 training_bp = Blueprint('training_blueprint', __name__)
 
 
-@training_bp.route('/upload-files', methods=['POST'])
+@training_bp.route('/upload-files/<bucket_name>', methods=['POST'])
 @inject
-def upload_files(training_service: TrainingService = Provide[Container.training_service]):
+def upload_files(bucket_name, training_service: TrainingService = Provide[Container.training_service]):
     files = request.files.getlist('files')
 
-    output = training_service.train_files_data(files)
+    if not bucket_name or bucket_name.isspace():
+        raise Exception("bucket name can not be empty")
+
+    output = training_service.train_files_data(files, bucket_name)
 
     return jsonify({'result': output})
 

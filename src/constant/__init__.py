@@ -30,6 +30,8 @@ RESOURCE_NOT_FOUND = 'Resource not found'
 INVALID_REQUEST = 'Invalid request'
 INTERNAL_SERVER_ERROR = 'Internal Server Error'
 
+TEMP_FOLDER = '/Temp/'
+
 LINK_TO_CONTENT_DICT = {
     "https://dx.walmart.com/documents/product/DX.io/How-to-Contribute-to-DX-io-izdpqsncp9": """"
     The Global Tech Platform associates are the primary contributors for DX.io, but we welcome contributions from all Walmart organizations as well. Here are ways you can contribute to DX.io:
