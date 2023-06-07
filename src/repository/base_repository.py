@@ -2,8 +2,6 @@ from postgrest import APIResponse
 from src.configuration.supabase_client import SupabaseClient
 
 from src.service.base_service import BaseService
-from src.dto.project.create_project_dto import CreateProjectRequest
-from src.dto.project.update_project_dto import UpdateProjectRequest
 
 
 class BaseRepository(BaseService):
