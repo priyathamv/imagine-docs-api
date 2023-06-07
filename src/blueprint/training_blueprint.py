@@ -3,8 +3,8 @@ from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
+from src.model.data_source.data_source_model import DataSourceModel
 from src.service.training_service import TrainingService
-from src.dto.core.website_training_request import WebsiteTrainingRequest
 
 training_bp = Blueprint('training_blueprint', __name__)
 
@@ -22,8 +22,8 @@ def upload_files(training_service: TrainingService = Provide[Container.training_
 @training_bp.route('/scrape-website', methods=['POST'])
 @inject
 def scrape_website(training_service: TrainingService = Provide[Container.training_service]):
-    website_training_request = WebsiteTrainingRequest.from_dict(request.get_json())
+    data_source_request = DataSourceModel.from_dict(request.get_json())
 
-    output = training_service.train_website_data(website_training_request)
+    status = training_service.train_website_data(data_source_request)
 
-    return jsonify({'result': output})
+    return jsonify({'status': status})

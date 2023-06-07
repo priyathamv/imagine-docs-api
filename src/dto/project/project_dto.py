@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, Undefined
 
+from src.model.project.project_model import ProjectModel
 
-# Order of annotations matters
+
 @dataclass_json(undefined=Undefined.EXCLUDE)
 @dataclass
-class CreateProjectRequest:
-    name: str
-    owner_id: str
+class ProjectDTO(ProjectModel):
+    id: str
+    created_at: str
+    updated_at: str

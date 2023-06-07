@@ -1,16 +1,30 @@
+import logging
+from typing import List
+
+from src.dto.data_source.data_source_dto import DataSourceDTO
+from src.model.content.content_model import ContentModel
+from src.model.data_source.data_source_model import DataSourceModel
+from src.model.project.job_status import JobStatus
 from src.service.base_service import BaseService
+from src.service.content import ContentService
+from src.service.data_source import DataSourceService
 from src.service.file_service import FileService
-from src.service.gpt.gpt_service import GPTService
-from src.service.web_scraper.web_scraper_service import WebScraperService
-from src.dto.core.website_training_request import WebsiteTrainingRequest
-from src.constant import LINK_TO_CONTENT_DICT
+from src.service.gpt_service import GPTService
+from src.service.web_scraper import WebScraperService
+from src.constant import LINK_TO_PAGE_CONTENT_DICT
+
+log = logging.getLogger(__name__)
+
 
 class TrainingService(BaseService):
 
-    def __init__(self, file_service: FileService, web_scraper_service: WebScraperService, gpt_service: GPTService):
+    def __init__(self, file_service: FileService, web_scraper_service: WebScraperService, gpt_service: GPTService,
+                 data_source_service: DataSourceService, content_service: ContentService):
         self.file_service = file_service
         self.web_scraper_service = web_scraper_service
         self.gpt_service = gpt_service
+        self.data_source_service = data_source_service
+        self.content_service = content_service
         super().__init__()
 
     def train_files_data(self, files):
@@ -24,17 +38,22 @@ class TrainingService(BaseService):
 
         return self.file_service.upload_files(files)
 
-    def train_website_data(self, training_request: WebsiteTrainingRequest):
+    def train_website_data(self, data_source_request: DataSourceModel):
         self.logger.debug('Training website data...')
 
-        # application_id = training_request.application_id
-        # url = training_request.url
-        # is_auth_enabled = training_request.is_auth_enabled
-        # is_recursive = training_request.is_recursive
-        # rules = training_request.rules
+        # Step 1: Save Data Source information in the database
+        data_source_request.set_job_status(JobStatus.IN_PROGRESS)
+        data_source_saved = self.data_source_service.save(data_source_request)
 
-        # link_to_content_dict = self.web_scraper_service.scrape_website(url, is_auth_enabled, is_recursive, rules)
+        # Step 2: Fetch all the links to content dictionary for the given website
+        link_to_page_content_dict = LINK_TO_PAGE_CONTENT_DICT  # self.web_scraper_service.scrape_website(url, is_auth_enabled, is_recursive, rules)
 
-        self.gpt_service.train_model(LINK_TO_CONTENT_DICT)
+        # Step 3: Train the model with the content extracted
+        content_list: List[ContentModel] = self.gpt_service.extract_content_list(data_source_saved.id,
+                                                                                 link_to_page_content_dict)
 
-        return 'link_to_text_dict'
+        # Step 4: Save contents in the database
+        save_status = self.content_service.save_all(content_list)
+        log.info('Saved all the contents with status: %s', save_status)
+
+        return save_status

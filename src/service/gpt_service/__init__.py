@@ -3,44 +3,47 @@ from typing import List
 import tiktoken
 import openai
 
+from src.configuration.gpt_client import GPTClient
 from src.constant import OPENAI_DEPLOYMENT_NAME, OPENAI_MODEL
+from src.model.content.content_model import ContentModel
 from src.service.base_service import BaseService
 
 
 class GPTService(BaseService):
 
-    def __init__(self) -> None:
+    def __init__(self, gpt_client: GPTClient) -> None:
         super().__init__()
+        self.openai = gpt_client.get_instance()
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
+        self.deployment_id = os.environ.get(OPENAI_DEPLOYMENT_NAME)
+        self.openai_model = os.environ.get(OPENAI_MODEL)
 
-    def train_model(self, link_to_content_dict):
-        content_to_token_dict = {}
-        for link, content in link_to_content_dict:
-            content_to_token_dict[content] = self.get_content_to_token_tuples(content, 500, self.tokenizer)
+    def extract_content_list(self, data_source_id: str, link_to_page_content_dict):
 
-            if len(content_to_token_dict) > 0:
-                # DataSource(link, SourceType.WEBSITE)
-                for content, token_count in content_to_token_dict:
-                    embedding = openai.Embedding.create(input=content, engine='text-embedding-ada-002')['data'][0][
-                        'embedding']
+        content_list: List[ContentModel] = []
+        for link, page_content in link_to_page_content_dict.items():
+            content_to_token_tuples = self.get_content_to_token_tuples(page_content, 500,
+                                                                                         self.tokenizer)
 
-                    # Content(data_source_id=1, content=content, token_count=token_count, embedding=embedding)
+            if len(content_to_token_tuples) > 0:
+                for (chunk, token_count) in content_to_token_tuples:
+                    embedding = self.create_embeddings(chunk)
+                    content_list.append(ContentModel(data_source_id, chunk, token_count, embedding))
+
+        return content_list
 
     # Azure OpenAI does not support multiple inputs, so input can only be a string
     # TODO: The maximum length of input text for our embedding models is 2048 tokens (equivalent to around 2-3 pages of text).
     def create_embeddings(self, input: str):
-        deployment_id = os.environ.get(OPENAI_DEPLOYMENT_NAME)
-        openai_model = os.environ.get(OPENAI_MODEL)
-
-        response = openai.Embedding.create(
+        response = self.openai.Embedding.create(
             input=input,
-            deployment_id=deployment_id,
-            engine=openai_model
+            deployment_id=self.deployment_id,
+            engine=self.openai_model
         )
         return response['data'][0]['embedding']
 
     # Split the text into chunks of a maximum number of tokens
-    def get_content_to_token_tuples(self, text: str, max_tokens: int, tokenizer) -> List[str]:
+    def get_content_to_token_tuples(self, text: str, max_tokens: int, tokenizer):
         # OpenAI recommends replacing newlines with spaces
         text: str = self.replace_newlines_with_spaces(text)
 
@@ -52,26 +55,26 @@ class GPTService(BaseService):
         tokens: List[int] = [len(tokenizer.encode(' ' + sentence)) for sentence in sentences]
 
         tokens_so_far = 0
-        chunks: List[(str, int)] = []
-        chunk: List[str] = []
+        content_to_token_tuples: List[(str, int)] = []
+        content_list: List[str] = []
 
         # Loop through the sentences and tokens joined together in a tuple
         for sentence, token in zip(sentences, tokens):
             if tokens_so_far + token > max_tokens:
-                chunks.append(('. '.join(chunk) + '.', tokens_so_far))
-                chunk = []
+                content_to_token_tuples.append(('. '.join(content_list) + '.', tokens_so_far))
+                content_list = []
                 tokens_so_far = 0
 
             if token > max_tokens:
                 continue
 
-            chunk.append(sentence)
+            content_list.append(sentence)
             tokens_so_far += token + 1
 
-        if chunk:
-            chunks.append(('. '.join(chunk) + '.', tokens_so_far))
+        if content_list:
+            content_to_token_tuples.append(('. '.join(content_list) + '.', tokens_so_far))
 
-        return chunks
+        return content_to_token_tuples
 
     # TODO: We should not do this for code snippets
     def replace_newlines_with_spaces(self, text: str) -> str:

@@ -9,7 +9,6 @@ from src.constant import USER_AGENTS, NETWORK_IDLE, RESOURCE_EXCLUSIONS
 from src.service.base_service import BaseService
 from src.dto.core.rule import Rule
 from src.dto.core.rule_type import RuleType
-from src.model.data_source.content import Content
 
 
 class WebScraperService(BaseService):
