@@ -3,21 +3,22 @@ from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
+from src.exception import InvalidRequestException
 from src.service.training_service import TrainingService
 from src.dto.core.website_training_request import WebsiteTrainingRequest
 
 training_bp = Blueprint('training_blueprint', __name__)
 
 
-@training_bp.route('/upload-files/<bucket_name>', methods=['POST'])
+@training_bp.route('/upload-files/project_id', methods=['POST'])
 @inject
-def upload_files(bucket_name, training_service: TrainingService = Provide[Container.training_service]):
+def upload_files(project_id, training_service: TrainingService = Provide[Container.training_service]):
     files = request.files.getlist('files')
 
-    if not bucket_name or bucket_name.isspace():
-        raise Exception("bucket name can not be empty")
+    if not project_id or project_id.isspace():
+        raise InvalidRequestException("Invalid project_id !!")
 
-    output = training_service.train_files_data(files, bucket_name)
+    output = training_service.train_files_data(files, project_id)
 
     return jsonify({'result': output})
 

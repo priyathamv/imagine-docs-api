@@ -3,7 +3,7 @@ from storage3.utils import StorageException
 
 from src.configuration.supabase_client import SupabaseClient
 from src.service.base_service import BaseService
-from src.service.file_service import FileService
+from src.service.file_service import FileService, create_directory
 from src.service.gpt.gpt_service import GPTService
 from src.service.scheduler.file_upload_scheduler import process_files
 from src.service.web_scraper.web_scraper_service import WebScraperService
@@ -21,26 +21,25 @@ class TrainingService(BaseService):
         self._supabase = supabase_client.get_instance()
         super().__init__()
 
-    def train_files_data(self, files, bucket_name):
+    def train_files_data(self, files, project_id):
         self.logger.debug('Uploading files...')
 
-        #bucket_response = self.create_or_get_bucket(bucket_name)
+        #bucket_response = self.get_or_create_bucket(project_id)
+
+        temp_folder_path = ''.join([os.path.abspath('.'), TEMP_FOLDER])
+
+        # create a directory
+        new_dir = ''.join([temp_folder_path, project_id])
+        create_directory(new_dir)
 
         for file in files:
             file_name = file.filename
-            temp_folder_path = ''.join([os.path.abspath('.'), TEMP_FOLDER])
-
-            # create a directory
-            new_dir = ''.join([temp_folder_path, bucket_name])
-            self.create_directory(new_dir)
-
             file_new_path = "".join([new_dir, '/', file_name])
             file.save(file_new_path)
 
-            process_files(new_dir, self._supabase)
+        process_files(new_dir, self._supabase)
 
-            # res = self._supabase.storage.from_(bucket_name).upload(file_name, file_new_path)
-            # update data_source record to IN_PROGRESS
+        # update data_source record to IN_PROGRESS
 
         # Step 1: Upload the files to Supabase storage and get the links
         # Step 2: Update the data_source tables in Supabase with the details
@@ -66,17 +65,10 @@ class TrainingService(BaseService):
 
         return 'link_to_text_dict'
 
-    def create_or_get_bucket(self, bucket_name):
+    def get_or_create_bucket(self, bucket_name):
 
         try:
             response = self._supabase.storage.get_bucket(bucket_name)
             return response
-        except StorageException:
+        except StorageException as e:
             return self._supabase.storage.create_bucket(bucket_name)
-
-    def create_directory(self, path):
-        if not os.path.exists(path):
-            os.mkdir(path)
-            print("Folder %s created!" % path)
-        else:
-            print("Folder %s already exists" % path)

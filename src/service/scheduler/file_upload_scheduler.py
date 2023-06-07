@@ -30,9 +30,6 @@ def process_files(folder, supabase_client: Client):
             for list_item in file_list:
                 if list_item.get('name').__eq__(file_name):
                     pass
-                    # change the status of data source to COMPLETED
+                    # change the status of data source to NOT_INITIATED
                     # break
-
-
-
 

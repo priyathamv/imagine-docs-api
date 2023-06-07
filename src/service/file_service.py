@@ -4,6 +4,14 @@ from src.service.base_service import BaseService
 from src.service.file_parser_service import FileParserService
 
 
+def create_directory(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
+        print("Folder %s created!" % path)
+    else:
+        print("Folder %s already exists" % path)
+
+
 class FileService(BaseService):
 
     def __init__(self, file_parser: FileParserService) -> None:
