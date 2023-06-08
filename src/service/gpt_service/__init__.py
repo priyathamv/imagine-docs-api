@@ -1,7 +1,6 @@
 import os
 from typing import List
 import tiktoken
-import openai
 
 from src.configuration.gpt_client import GPTClient
 from src.constant import OPENAI_DEPLOYMENT_NAME, OPENAI_MODEL
@@ -13,17 +12,16 @@ class GPTService(BaseService):
 
     def __init__(self, gpt_client: GPTClient) -> None:
         super().__init__()
-        self.openai = gpt_client.get_instance()
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
-        self.deployment_id = os.environ.get(OPENAI_DEPLOYMENT_NAME)
-        self.openai_model = os.environ.get(OPENAI_MODEL)
+        self.openai = gpt_client.get_instance()
+        self.deployment_name = os.environ.get(OPENAI_DEPLOYMENT_NAME)
 
     def extract_content_list(self, data_source_id: str, link_to_page_content_dict):
 
         content_list: List[ContentModel] = []
         for link, page_content in link_to_page_content_dict.items():
             content_to_token_tuples = self.get_content_to_token_tuples(page_content, 500,
-                                                                                         self.tokenizer)
+                                                                       self.tokenizer)
 
             if len(content_to_token_tuples) > 0:
                 for (chunk, token_count) in content_to_token_tuples:
@@ -37,8 +35,7 @@ class GPTService(BaseService):
     def create_embeddings(self, input: str):
         response = self.openai.Embedding.create(
             input=input,
-            deployment_id=self.deployment_id,
-            engine=self.openai_model
+            engine=self.deployment_name
         )
         return response['data'][0]['embedding']
 
@@ -82,3 +79,14 @@ class GPTService(BaseService):
             .replace('\\n', ' ') \
             .replace('  ', ' ') \
             .replace('  ', ' ')
+
+    # def normalize_text(self, s):
+    #     s = re.sub(r'\s+',  ' ', s).strip()
+    #     s = re.sub(r". ,","",s)
+    #     # remove all instances of multiple spaces
+    #     s = s.replace("..",".")
+    #     s = s.replace(". .",".")
+    #     s = s.replace("\n", "")
+    #     s = s.strip()
+    #
+    #     return s

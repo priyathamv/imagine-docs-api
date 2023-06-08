@@ -43,13 +43,13 @@ class TrainingService(BaseService):
 
         # Step 1: Save Data Source information in the database
         data_source_request.set_job_status(JobStatus.IN_PROGRESS)
-        data_source_saved = self.data_source_service.save(data_source_request)
+        # data_source_saved = self.data_source_service.save(data_source_request)
 
         # Step 2: Fetch all the links to content dictionary for the given website
         link_to_page_content_dict = LINK_TO_PAGE_CONTENT_DICT  # self.web_scraper_service.scrape_website(url, is_auth_enabled, is_recursive, rules)
 
         # Step 3: Train the model with the content extracted
-        content_list: List[ContentModel] = self.gpt_service.extract_content_list(data_source_saved.id,
+        content_list: List[ContentModel] = self.gpt_service.extract_content_list('dae2f265-9ed6-42f1-a72d-1b9ee4fc816b',
                                                                                  link_to_page_content_dict)
 
         # Step 4: Save contents in the database
