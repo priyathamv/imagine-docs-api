@@ -47,4 +47,4 @@ class Container(containers.DeclarativeContainer):
     file_service = providers.Factory(FileService, file_parser_service)
     web_scraper_service = providers.Factory(WebScraperService)
     gpt_service = providers.Factory(GPTService, gpt_client)
-    training_service = providers.Factory(TrainingService, file_service, web_scraper_service, gpt_service, data_source_service, content_service)
+    training_service = providers.Factory(TrainingService, file_service, web_scraper_service, gpt_service, supabase_client, data_source_service, content_service)

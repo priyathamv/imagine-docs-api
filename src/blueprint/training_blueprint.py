@@ -3,18 +3,22 @@ from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
 from src.containers import Container
+from src.exception import InvalidRequestException
 from src.model.data_source.data_source_model import DataSourceModel
 from src.service.training_service import TrainingService
 
 training_bp = Blueprint('training_blueprint', __name__)
 
 
-@training_bp.route('/upload-files', methods=['POST'])
+@training_bp.route('/upload-files/<project_id>', methods=['POST'])
 @inject
-def upload_files(training_service: TrainingService = Provide[Container.training_service]):
+def upload_files(project_id, training_service: TrainingService = Provide[Container.training_service]):
     files = request.files.getlist('files')
 
-    output = training_service.train_files_data(files)
+    if not project_id or project_id.isspace():
+        raise InvalidRequestException("Invalid project_id !!")
+
+    output = training_service.train_files_data(files, project_id)
 
     return jsonify({'result': output})
 
