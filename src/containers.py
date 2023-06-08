@@ -8,6 +8,7 @@ from src.service.gpt_service import GPTService
 from src.service.project import ProjectService
 from src.service.file_service import FileService
 from src.service.file_parser import FileParserService
+from src.service.scheduler.file_upload_scheduler import FileUploadScheduler
 from src.service.web_scraper import WebScraperService
 from src.service.training_service import TrainingService
 from src.repository.project_repository import ProjectRepository
@@ -47,4 +48,5 @@ class Container(containers.DeclarativeContainer):
     file_service = providers.Factory(FileService, file_parser_service)
     web_scraper_service = providers.Factory(WebScraperService)
     gpt_service = providers.Factory(GPTService, gpt_client)
+    file_upload_scheduler = providers.Factory(FileUploadScheduler, supabase_client, data_source_service)
     training_service = providers.Factory(TrainingService, file_service, web_scraper_service, gpt_service, supabase_client, data_source_service, content_service)

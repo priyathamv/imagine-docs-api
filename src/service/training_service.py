@@ -15,13 +15,14 @@ from src.service.base_service import BaseService
 from src.service.content import ContentService
 from src.service.data_source import DataSourceService
 from src.service.gpt_service import GPTService
+from src.service.scheduler.file_upload_scheduler import FileUploadScheduler
 from src.service.web_scraper import WebScraperService
 
 log = logging.getLogger(__name__)
 
 from src.service.file_service import FileService, create_directory
 
-from src.service.scheduler.file_upload_scheduler import process_files
+# from src.service.scheduler.file_upload_scheduler import process_files
 
 from src.constant import TEMP_FOLDER
 
@@ -30,13 +31,14 @@ class TrainingService(BaseService):
 
     def __init__(self, file_service: FileService, web_scraper_service: WebScraperService, gpt_service: GPTService,
                  supabase_client: SupabaseClient, data_source_service: DataSourceService,
-                 content_service: ContentService):
+                 content_service: ContentService, file_upload_scheduler: FileUploadScheduler):
         self.file_service = file_service
         self.web_scraper_service = web_scraper_service
         self.gpt_service = gpt_service
         self._supabase = supabase_client.get_instance()
         self.data_source_service = data_source_service
         self.content_service = content_service
+        self.file_upload_scheduler = file_upload_scheduler
         super().__init__()
 
     def train_files_data(self, files, project_id):
@@ -66,7 +68,7 @@ class TrainingService(BaseService):
             # ds_dto_list.append(saved_ds)
             f_to_ds_dict[file_name] = saved_ds
 
-        process_files(new_dir, self._supabase, f_to_ds_dict)
+        self.file_upload_scheduler.process_files(new_dir, self._supabase, f_to_ds_dict)
 
         # update data_source record to IN_PROGRESS
 
