@@ -1,6 +1,5 @@
 from typing import List
 
-from src.dto.project.project_details_dto import ProjectDetailsDTO
 from src.dto.project.project_dto import ProjectDTO
 from src.model.project.project_model import ProjectModel
 from src.service.base_service import BaseService
@@ -27,8 +26,8 @@ class ProjectService(BaseService):
         project_details_response = self.project_repository.fetch_project_details(id)
 
         if project_details_response.data:
-            x = ProjectDetailsDTO.from_dict(project_details_response.data[0])
-            return x
+            return project_details_response.data[0]
+            # x = ProjectDetailsDTO.from_dict(project_details_response.data[0])
 
         raise RecordNotFoundException('Project not found with id: ' + id)
 

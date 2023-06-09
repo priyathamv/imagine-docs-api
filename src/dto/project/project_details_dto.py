@@ -7,6 +7,7 @@ from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.dto.project.project_dto import ProjectDTO
 
 
+# TODO: Do we even need this?
 @dataclass_json(undefined=Undefined.EXCLUDE)
 @dataclass
 class ProjectDetailsDTO(ProjectDTO):

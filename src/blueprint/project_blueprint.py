@@ -24,8 +24,7 @@ def find_all_projects(project_service: ProjectService = Provide[Container.projec
 @project_bp.route('/<id>', methods=['GET'])
 @inject
 def find_project_by_id(id, project_service: ProjectService = Provide[Container.project_service]):
-    project_details = project_service.get_project_by_id(id)
-    # project_details = project_service.get_project_details(id)
+    project_details = project_service.get_project_details(id)
 
     return jsonify(project_details)
 

@@ -1,6 +1,3 @@
-import json
-from enum import Enum
-
 from flask import Flask
 from flask_cors import CORS
 
@@ -14,7 +11,7 @@ def create_app():
     app = Flask(__name__)
 
     # Enabling CORS for all routes
-    CORS(app)
+    CORS(app, resources={r'/*': {'origins': '*'}})
 
     # Fetching configuration from config.py
     # config_type = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
