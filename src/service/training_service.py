@@ -58,7 +58,7 @@ class TrainingService(BaseService):
         for file in files:
             file_name = file.filename
             file_new_path = "".join([new_dir, '/', file_name])
-            file.save(file_new_path)
+            file.save_project(file_new_path)
 
             ds = DataSourceModel()
             ds.job_status = JobStatus.IN_PROGRESS

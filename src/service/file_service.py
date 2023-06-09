@@ -25,7 +25,7 @@ class FileService(BaseService):
         for file in files:
             filename = file.filename
             file_ext = os.path.splitext(filename)[1]
-            file.save(filename)
+            file.save_project(filename)
             if file_ext == '.pdf':
                 text = self.file_parser.extract_text_from_pdf(filename)
             elif file_ext == '.docx':

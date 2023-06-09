@@ -24,9 +24,10 @@ def find_all_projects(project_service: ProjectService = Provide[Container.projec
 @project_bp.route('/<id>', methods=['GET'])
 @inject
 def find_project_by_id(id, project_service: ProjectService = Provide[Container.project_service]):
-    project = project_service.find_by_id(id)
+    project_details = project_service.get_project_by_id(id)
+    # project_details = project_service.get_project_details(id)
 
-    return jsonify(project)
+    return jsonify(project_details)
 
 
 @project_bp.route('/', methods=['POST'])
@@ -34,7 +35,7 @@ def find_project_by_id(id, project_service: ProjectService = Provide[Container.p
 def save_project(project_service: ProjectService = Provide[Container.project_service]):
     create_project_request = ProjectModel.from_dict(request.get_json())
 
-    saved_project = project_service.save(create_project_request)
+    saved_project = project_service.save_project(create_project_request)
 
     return jsonify(saved_project)
 
@@ -44,7 +45,7 @@ def save_project(project_service: ProjectService = Provide[Container.project_ser
 def update_project(project_service: ProjectService = Provide[Container.project_service]):
     update_project_request = ProjectDTO.from_dict(request.get_json())
 
-    updated_project = project_service.update(update_project_request)
+    updated_project = project_service.update_project(update_project_request)
 
     return jsonify(updated_project)
 
@@ -52,6 +53,6 @@ def update_project(project_service: ProjectService = Provide[Container.project_s
 @project_bp.route('/<id>', methods=['DELETE'])
 @inject
 def delete_project(id: str, project_service: ProjectService = Provide[Container.project_service]):
-    deleted_project = project_service.delete(id)
+    deleted_project = project_service.delete_project(id)
 
     return jsonify(deleted_project)

@@ -1,4 +1,8 @@
+import json
+from enum import Enum
+
 from flask import Flask
+from flask_cors import CORS
 
 from src.blueprint import register_blueprints
 from src.containers import Container
@@ -8,6 +12,9 @@ from src.exception import global_exception_handler
 # Application Factory
 def create_app():
     app = Flask(__name__)
+
+    # Enabling CORS for all routes
+    CORS(app)
 
     # Fetching configuration from config.py
     # config_type = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')

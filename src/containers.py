@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from src.service.content import ContentService
 from src.service.data_source import DataSourceService
 from src.service.gpt_service import GPTService
+from src.service.gpt_stream_service import GPTStreamService
 from src.service.project import ProjectService
 from src.service.file_service import FileService
 from src.service.file_parser import FileParserService
@@ -48,5 +49,6 @@ class Container(containers.DeclarativeContainer):
     file_service = providers.Factory(FileService, file_parser_service)
     web_scraper_service = providers.Factory(WebScraperService)
     gpt_service = providers.Factory(GPTService, gpt_client)
+    gpt_stream_service = providers.Factory(GPTStreamService, gpt_service, gpt_client, supabase_client)
     file_upload_scheduler = providers.Factory(FileUploadScheduler, supabase_client, data_source_service)
     training_service = providers.Factory(TrainingService, file_service, web_scraper_service, gpt_service, supabase_client, data_source_service, content_service)
