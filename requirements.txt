@@ -2,12 +2,14 @@ beautifulsoup4==4.8.0
 dataclasses_json==0.5.7
 dependency_injector==4.41.0
 Flask==2.3.2
+Flask_Cors==3.0.10
 openai==0.27.7
 pdfminer.six==20221105
 playwright==1.33.0
 postgrest==0.10.6
 python-dotenv==1.0.0
 python_docx==0.8.11
+storage3==0.5.2
 supabase==1.0.3
 tiktoken==0.4.0
 trafilatura==1.6.0
