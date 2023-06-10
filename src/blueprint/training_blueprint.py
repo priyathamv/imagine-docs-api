@@ -17,7 +17,7 @@ def upload_files(project_id, training_service: TrainingService = Provide[Contain
     files = request.files.getlist('files')
 
     if not project_id or project_id.isspace():
-        raise InvalidRequestException("Invalid project_id !!")
+        raise InvalidRequestException("Invalid project_id: " + project_id)
 
     output = training_service.train_files_data(files, project_id)
 

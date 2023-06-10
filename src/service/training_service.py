@@ -64,7 +64,7 @@ class TrainingService(BaseService):
             ds.job_status = JobStatus.IN_PROGRESS
             ds.source_type = SourceType.FILE
             ds.project_id = project_id
-            saved_ds = self.data_source_service.save(ds)
+            saved_ds = self.data_source_service.save_data_source(ds)
             # ds_dto_list.append(saved_ds)
             f_to_ds_dict[file_name] = saved_ds
 

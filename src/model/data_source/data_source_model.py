@@ -18,5 +18,12 @@ class DataSourceModel:
     rules: List[Rule]
     job_status: JobStatus = field(metadata=config(encoder=lambda x: x.value, decoder=JobStatus))
 
-    def set_job_status(self, job_status: JobStatus):
-        self.job_status = job_status
+    @classmethod
+    def from_file_request(cls, project_id: str):
+        return cls(project_id, SourceType.FILE, '', False, False, [], JobStatus.NOT_INITIATED)
+
+    @classmethod
+    def from_website_request(cls, request_json):
+        return cls(request_json['project_id'], SourceType.WEBSITE, request_json['source_link'],
+                   request_json['is_auth_enabled'], request_json['is_recursive'], request_json['rules'],
+                   JobStatus.NOT_INITIATED)

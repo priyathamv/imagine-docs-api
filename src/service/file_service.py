@@ -18,6 +18,9 @@ class FileService(BaseService):
         self.file_parser = file_parser
         super().__init__()
 
+    def upload_file(self, file):
+        pass
+
     def upload_files(self, files):
         self.logger.debug('Uploading files...')
 

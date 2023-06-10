@@ -42,11 +42,11 @@ class Container(containers.DeclarativeContainer):
     content_repository = providers.Factory(ContentRepository, supabase_client, 'content')
 
     # Services
-    project_service = providers.Factory(ProjectService, project_repository)
-    data_source_service = providers.Factory(DataSourceService, data_source_repository)
-    content_service = providers.Factory(ContentService, content_repository)
     file_parser_service = providers.Factory(FileParserService)
     file_service = providers.Factory(FileService, file_parser_service)
+    project_service = providers.Factory(ProjectService, project_repository)
+    data_source_service = providers.Factory(DataSourceService, data_source_repository, file_service)
+    content_service = providers.Factory(ContentService, content_repository)
     web_scraper_service = providers.Factory(WebScraperService)
     gpt_service = providers.Factory(GPTService, gpt_client)
     gpt_stream_service = providers.Factory(GPTStreamService, gpt_service, gpt_client, supabase_client)
