@@ -6,6 +6,7 @@ from trafilatura.settings import use_config
 from playwright.sync_api import sync_playwright
 
 from src.constant import USER_AGENTS, NETWORK_IDLE, RESOURCE_EXCLUSIONS
+from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.service.base_service import BaseService
 from src.dto.core.rule import Rule
 from src.dto.core.rule_type import RuleType
@@ -17,8 +18,12 @@ class WebScraperService(BaseService):
         super().__init__()
 
     # def scrape_website(self, base_url, auth_enabled, include_rules):
-    def scrape_website(self, url, is_auth_enabled, is_recursive, rules):
-        domain_name = self.extract_domain_name(url)
+    def scrape_website(self, data_source_request: DataSourceDTO):
+        base_url = data_source_request.source_link
+        is_auth_enabled = data_source_request.is_auth_enabled
+        is_recursive = data_source_request.is_recursive
+        rules = data_source_request.rules
+        domain_name = self.extract_domain_name(base_url)
 
         with sync_playwright() as p:
             # Launching a headless browser
@@ -31,54 +36,55 @@ class WebScraperService(BaseService):
             context = browser.new_context(user_agent=user_agent)
             page = context.new_page()
 
-            # links = [url]
+            # links = [base_url]
             links = [
-                'https://dx.walmart.com/documents/product/DX.io/How-to-Contribute-to-DX-io-izdpqsncp9',
-                'https://dx.walmart.com/documents/product/Starter%20Kit%20Contributor/overview',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/overview',
-                'https://dx.walmart.com/documents/product/DX.io/overview',
-                'https://dx.walmart.com/documents/product/Starter%20Kit%20Contributor/857385746'
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/337e1ac15eba1bd8583d816dfe0628fd9c46f0cc8d3116c882753125284c3de6',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/50e5604aca0442e005e691dd5c7fb013fdbeb52223583f61207f75a6db58de11',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/3afa501ffc5c90875e29677c6e22d6a2f916da305e493d07033e57bb0ad5bb1f',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/dde72fb52353fa5a60376dd2481a82db045098005795c6aa15191312aba94f48',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/dde72fb52353fa5a60376dd2481a82db045098005795c6aa15191312aba94f48',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/b1f1a828c42fdcfc130bd2741da62685bc0520a301d55c8d61218eaf58958b69',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/8ab6403541933f03512ee73fdc31927f9570138262f30631e55ba5a1eb7e4ab7',
+                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/30486b6a3ff1e5e27fd8d1fb58938db9fb215cd19169403983d7fe6c77a6809e'
             ]
             visited_links = []
             link_to_text_dict = dict()
-            for index, link in enumerate(links):
-                if link not in visited_links:
-                    # TODO: not working (Blocking resources like image, video, css to improve performance)
-                    # page.route('**/*', self.handle_route)
+            for index, cur_link in enumerate(links):
+                # If the current link is already visited or is not valid based on the defined rules
+                if (cur_link in visited_links) or (not self.is_link_valid_to_extract_text(cur_link, rules)):
+                    continue
 
-                    # Handling authentication in the first request if needed
-                    if is_auth_enabled == True and index == 0:
-                        # TODO: handle invalid tags/credentials
-                        page.goto(link, wait_until=NETWORK_IDLE)
-                        page.fill("#username1", "****")
-                        page.fill("#password", "****")
-                        page.get_by_title("SIGN IN").click()
-                        page.wait_for_load_state(NETWORK_IDLE)
-                    else:
-                        page.goto(link, wait_until=NETWORK_IDLE)
+                # TODO: not working (Blocking resources like image, video, css to improve performance)
+                # page.route('**/*', self.handle_route)
 
-                    cur_content = page.content()
-                    # data_source: DataSource = DataSource(source_link=link, source_type=SourceType.WEBSITE)
-                    # clean_links = self.get_links_from_html(cur_content, domain_name)
+                # Handling authentication in the first request if needed
+                if is_auth_enabled == True and index == 0:
+                    # TODO: handle invalid tags/credentials
+                    page.goto(cur_link, wait_until=NETWORK_IDLE)
+                    page.fill("#username1", "****")
+                    page.fill("#password", "****")
+                    page.get_by_title("SIGN IN").click()
+                    page.wait_for_load_state(NETWORK_IDLE)
+                else:
+                    page.goto(cur_link, wait_until=NETWORK_IDLE)
 
-                    # content_to_token_tuples: List[(str, int)] = []
+                # TODO: Other alternatives to consider
+                '''
+                https://github.com/aaronsw/html2text
+                https://github.com/dragnet-org/dragnet
+                https://github.com/codelucas/newspaper
+                https://github.com/buriy/python-readability
+                '''
+                cur_content = page.content()
+                page_content = self.extract_using_trafilatura(cur_content)
+                link_to_text_dict[cur_link] = page_content
 
-                    if self.is_link_valid_to_extract_text(link, rules):
-                        # TODO: Other alternatives to consider
-                        '''
-                        https://github.com/aaronsw/html2text
-                        https://github.com/dragnet-org/dragnet
-                        https://github.com/codelucas/newspaper
-                        https://github.com/buriy/python-readability
-                        '''
-                        page_content: str = self.extract_using_trafilatura(cur_content)
-                        link_to_text_dict[link] = page_content
+                # clean_links = self.get_links_from_html(cur_content, domain_name)
+                # for cur_clean_link in clean_links:
+                #     if cur_clean_link not in links and self.is_link_valid_to_extract_text(cur_clean_link, rules):
+                #         links.append(cur_clean_link)
 
-                    # for cur_link in clean_links:
-                    #     if cur_link not in links:
-                    #         links.append(cur_link)
-
-                    visited_links.append(link)
+                visited_links.append(cur_link)
 
             return link_to_text_dict
 
@@ -143,7 +149,7 @@ class WebScraperService(BaseService):
         # Strip off the ending `/` if present
         return link_with_out_frag.rstrip('/')
 
-    def filter_link(self, link, domain_name) -> bool:
+    def filter_link(self, link, base_url) -> bool:
         if (link is None or
                 link == '' or
                 link == '/' or
@@ -151,7 +157,7 @@ class WebScraperService(BaseService):
                 link.startswith("mailto:") or
                 link.startswith("tel:")):
             return False
-        return link.startswith(domain_name) or link.startswith('/')
+        return link.startswith(base_url) or link.startswith('/')
 
     def extract_using_trafilatura(self, content):
         config = use_config()

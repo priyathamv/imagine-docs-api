@@ -7,6 +7,7 @@ from storage3.utils import StorageException
 
 from src.configuration.supabase_client import SupabaseClient
 from src.constant import LINK_TO_PAGE_CONTENT_DICT, MAX_WORKERS
+from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.model.content.content_model import ContentModel
 from src.model.data_source.data_source_model import DataSourceModel
 from src.model.data_source.source_type import SourceType
@@ -17,14 +18,10 @@ from src.service.data_source import DataSourceService
 from src.service.gpt_service import GPTService
 from src.service.scheduler.file_upload_scheduler import FileUploadScheduler
 from src.service.web_scraper import WebScraperService
+from src.service.file_service import FileService, create_directory
+from src.constant import TEMP_FOLDER
 
 log = logging.getLogger(__name__)
-
-from src.service.file_service import FileService, create_directory
-
-# from src.service.scheduler.file_upload_scheduler import process_files
-
-from src.constant import TEMP_FOLDER
 
 
 class TrainingService(BaseService):
@@ -40,6 +37,18 @@ class TrainingService(BaseService):
         self.content_service = content_service
         self.file_upload_scheduler = file_upload_scheduler
         super().__init__()
+
+    def train(self, project_id: str):
+        data_sources = self.data_source_service.find_by_project_id(project_id)
+
+        new_data_sources = data_sources #list(filter(lambda cur_data_source: cur_data_source.job_status == JobStatus.NOT_INITIATED, data_sources))
+
+        for data_source in new_data_sources:
+            if data_source.source_type == SourceType.WEBSITE:
+                self.train_website_data(data_source)
+            else:
+                pass
+                # self.train_files_data(data_source)
 
     def train_files_data(self, files, project_id):
         self.logger.debug('Uploading files...')
@@ -81,28 +90,30 @@ class TrainingService(BaseService):
 
         return self.file_service.upload_files(files)
 
-    def train_website_data(self, data_source_request: DataSourceModel):
+    def train_website_data(self, data_source_request: DataSourceDTO):
         self.logger.debug('Training website data...')
+        data_source_id = data_source_request.id
 
-        # Step 1: Save Data Source information in the database
-        data_source_request.set_job_status(JobStatus.IN_PROGRESS)
-        # data_source_saved = self.data_source_service.save(data_source_request)
+        # Step 1: Update Data Source job status to IN_PROGRESS
+        self.data_source_service.update_data_source_status(data_source_id, JobStatus.IN_PROGRESS)
 
         # Step 2: Fetch all the links to content dictionary for the given website
-        link_to_page_content_dict = LINK_TO_PAGE_CONTENT_DICT  # self.web_scraper_service.scrape_website(url, is_auth_enabled, is_recursive, rules)
+        link_to_page_content_dict = self.web_scraper_service.scrape_website(data_source_request)
 
         # Step 3: Train the model with the content extracted
-        content_list: List[ContentModel] = self.gpt_service.extract_content_list('dae2f265-9ed6-42f1-a72d-1b9ee4fc816b',
+        content_list: List[ContentModel] = self.gpt_service.extract_content_list(data_source_id,
                                                                                  link_to_page_content_dict)
 
         # Step 4: Save contents in the database
-        save_status = self.content_service.save_all(content_list)
-        log.info('Saved all the contents with status: %s', save_status)
+        content_save_status = self.content_service.save_all(content_list)
 
-        return save_status
+        # Step 5: Update Data Source job status to SUCCESSFUL
+        job_status = JobStatus.SUCCESSFUL if content_save_status else JobStatus.FAILED
+        data_source_status = self.data_source_service.update_data_source_status(data_source_id, job_status)
+
+        return content_save_status and data_source_status
 
     def get_or_create_bucket(self, bucket_name):
-
         try:
             response = self._supabase.storage.get_bucket(bucket_name)
             return response

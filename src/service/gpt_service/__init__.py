@@ -17,11 +17,9 @@ class GPTService(BaseService):
         self.deployment_name = os.environ.get(OPENAI_DEPLOYMENT_NAME)
 
     def extract_content_list(self, data_source_id: str, link_to_page_content_dict):
-
         content_list: List[ContentModel] = []
         for link, page_content in link_to_page_content_dict.items():
-            content_to_token_tuples = self.get_content_to_token_tuples(page_content, 500,
-                                                                       self.tokenizer)
+            content_to_token_tuples = self.get_content_to_token_tuples(page_content, 500)
 
             if len(content_to_token_tuples) > 0:
                 for (chunk, token_count) in content_to_token_tuples:
@@ -40,7 +38,7 @@ class GPTService(BaseService):
         return response['data'][0]['embedding']
 
     # Split the text into chunks of a maximum number of tokens
-    def get_content_to_token_tuples(self, text: str, max_tokens: int, tokenizer):
+    def get_content_to_token_tuples(self, text: str, max_tokens: int):
         # OpenAI recommends replacing newlines with spaces
         text: str = self.replace_newlines_with_spaces(text)
 
@@ -49,7 +47,7 @@ class GPTService(BaseService):
 
         # Get the number of tokens for each sentence
         # Space is prepended to ensure proper tokenization as some tokenizers treat the first char in a diff way
-        tokens: List[int] = [len(tokenizer.encode(' ' + sentence)) for sentence in sentences]
+        tokens: List[int] = [len(self.tokenizer.encode(' ' + sentence)) for sentence in sentences]
 
         tokens_so_far = 0
         content_to_token_tuples: List[(str, int)] = []
@@ -90,3 +88,11 @@ class GPTService(BaseService):
     #     s = s.strip()
     #
     #     return s
+
+    def get_completion(self, prompt) -> str:
+        completion = self.openai.Completion.create(deployment_id='gt3-test',
+                                                   model='gpt-35-turbo',
+                                                   prompt=prompt,
+                                                   temperature=0)
+
+        return completion['choices'][0]['text']

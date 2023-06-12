@@ -24,9 +24,9 @@ def save_file_data_source(data_source_service: DataSourceService = Provide[Conta
     return jsonify(saved_data_source)
 
 
-@data_source_bp.route('/', methods=['POST'])
+@data_source_bp.route('/website', methods=['POST'])
 @inject
-def save_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+def save_website_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
     create_data_source_request = DataSourceModel.from_website_request(request.get_json())
 
     saved_data_source = data_source_service.save_data_source(create_data_source_request)
@@ -47,6 +47,6 @@ def update_data_source(data_source_service: DataSourceService = Provide[Containe
 @data_source_bp.route('/<id>', methods=['DELETE'])
 @inject
 def delete_data_source(id: str, data_source_service: DataSourceService = Provide[Container.data_source_service]):
-    deleted_data_source = data_source_service.delete_data_source(id)
+    delete_status = data_source_service.delete_data_source(id)
 
-    return jsonify(deleted_data_source)
+    return jsonify({'status': delete_status})

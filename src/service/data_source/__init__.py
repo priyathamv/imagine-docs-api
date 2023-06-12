@@ -1,7 +1,9 @@
+from typing import List
+
 from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.exception import EntitySaveException, RecordNotFoundException, EntityUpdateException
 from src.model.data_source.data_source_model import DataSourceModel
-from src.model.data_source.source_type import SourceType
+from src.model.project.job_status import JobStatus
 from src.repository.data_source_repository import DataSourceRepository
 from src.service.base_service import BaseService
 from src.service.file_service import FileService
@@ -13,6 +15,11 @@ class DataSourceService(BaseService):
         super().__init__()
         self.data_source_repository = data_source_repository
         self.file_service = file_service
+
+    def find_by_project_id(self, project_id: str) -> List[DataSourceDTO]:
+        data_sources_response = self.data_source_repository.fetch_by_project_id(project_id)
+
+        return DataSourceDTO.schema().load(data_sources_response.data, many=True)
 
     def save_data_source(self, data_source: DataSourceModel, file=None):
         if file is not None:
@@ -38,10 +45,15 @@ class DataSourceService(BaseService):
 
         raise EntityUpdateException('DataSource updating failed' + str(update_response))
 
-    def delete_data_source(self, id: str):
+    def update_data_source_status(self, id: str, job_status: JobStatus) -> bool:
+        update_response = self.data_source_repository.update_status(id, job_status)
+
+        return len(update_response.data) == 1
+
+    def delete_data_source(self, id: str) -> bool:
         delete_response = self.data_source_repository.delete_by_id(id)
 
         if delete_response.data:
-            return delete_response.data[0]
+            return len(delete_response.data[0]) == 1
 
         raise RecordNotFoundException('DataSource not found to be deleted: ' + id)
