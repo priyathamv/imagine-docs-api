@@ -3,7 +3,7 @@ from typing import List
 import tiktoken
 
 from src.configuration.gpt_client import GPTClient
-from src.constant import OPENAI_DEPLOYMENT_NAME, OPENAI_MODEL
+from src.constant import OPENAI_EMBEDDING_ENGINE, OPENAI_EMBEDDING_MODEL, OPENAI_COMPLETION_MODEL, OPENAI_COMPLETION_ENGINE
 from src.model.content.content_model import ContentModel
 from src.service.base_service import BaseService
 
@@ -14,7 +14,10 @@ class GPTService(BaseService):
         super().__init__()
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
         self.openai = gpt_client.get_instance()
-        self.deployment_name = os.environ.get(OPENAI_DEPLOYMENT_NAME)
+        self.embedding_model = os.environ.get(OPENAI_EMBEDDING_MODEL) # Probably not needed
+        self.embedding_engine = os.environ.get(OPENAI_EMBEDDING_ENGINE)
+        self.completion_model = os.environ.get(OPENAI_COMPLETION_MODEL)
+        self.completion_engine = os.environ.get(OPENAI_COMPLETION_ENGINE)
 
     def extract_content_list(self, data_source_id: str, link_to_page_content_dict):
         content_list: List[ContentModel] = []
@@ -33,7 +36,7 @@ class GPTService(BaseService):
     def create_embeddings(self, input: str):
         response = self.openai.Embedding.create(
             input=input,
-            engine=self.deployment_name
+            engine=self.embedding_engine
         )
         return response['data'][0]['embedding']
 
@@ -89,10 +92,10 @@ class GPTService(BaseService):
     #
     #     return s
 
-    def get_completion(self, prompt) -> str:
-        completion = self.openai.Completion.create(deployment_id='gt3-test',
-                                                   model='gpt-35-turbo',
-                                                   prompt=prompt,
-                                                   temperature=0)
-
-        return completion['choices'][0]['text']
+    def get_completion(self, prompt):
+        return self.openai.Completion.create(model=self.completion_model,
+                                             engine=self.completion_engine,
+                                             prompt=prompt,
+                                             max_tokens=512,
+                                             temperature=0,
+                                             stream=True)

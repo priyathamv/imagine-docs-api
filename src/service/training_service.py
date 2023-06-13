@@ -1,12 +1,11 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from storage3.utils import StorageException
 
 from src.configuration.supabase_client import SupabaseClient
-from src.constant import LINK_TO_PAGE_CONTENT_DICT, MAX_WORKERS
+from src.constant import LINK_TO_PAGE_CONTENT_DICT
 from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.model.content.content_model import ContentModel
 from src.model.data_source.data_source_model import DataSourceModel
@@ -98,7 +97,7 @@ class TrainingService(BaseService):
         self.data_source_service.update_data_source_status(data_source_id, JobStatus.IN_PROGRESS)
 
         # Step 2: Fetch all the links to content dictionary for the given website
-        link_to_page_content_dict = self.web_scraper_service.scrape_website(data_source_request)
+        link_to_page_content_dict = self.web_scraper_service.scrape_website(data_source_request) # LINK_TO_PAGE_CONTENT_DICT
 
         # Step 3: Train the model with the content extracted
         content_list: List[ContentModel] = self.gpt_service.extract_content_list(data_source_id,

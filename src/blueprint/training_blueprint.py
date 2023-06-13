@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import request, Blueprint, Response
 from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
@@ -22,6 +22,7 @@ def upload_files(project_id, training_service: TrainingService = Provide[Contain
 
     return jsonify({'result': output})
 
+
 @training_bp.route('/train/<project_id>', methods=['POST'])
 @inject
 def train(project_id, training_service: TrainingService = Provide[Container.training_service]):
@@ -36,6 +37,11 @@ def train(project_id, training_service: TrainingService = Provide[Container.trai
 def response_stream(gpt_stream_service: GPTStreamService = Provide[Container.gpt_stream_service]):
     project_id: str = request.args.get('project_id')
     query: str = request.args.get('query')
-    stream = gpt_stream_service.create_context(project_id, query)
 
-    return jsonify({'data': stream})
+    def event_stream():
+        for line in gpt_stream_service.create_context(project_id, query):
+            text = line.choices[0].text
+            if len(text):
+                yield text
+
+    return Response(event_stream(), mimetype='text/event-stream')
