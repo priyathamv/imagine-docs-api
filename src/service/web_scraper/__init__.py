@@ -36,17 +36,8 @@ class WebScraperService(BaseService):
             context = browser.new_context(user_agent=user_agent)
             page = context.new_page()
 
-            # links = [base_url]
-            links = [
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/337e1ac15eba1bd8583d816dfe0628fd9c46f0cc8d3116c882753125284c3de6',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/50e5604aca0442e005e691dd5c7fb013fdbeb52223583f61207f75a6db58de11',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/3afa501ffc5c90875e29677c6e22d6a2f916da305e493d07033e57bb0ad5bb1f',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/dde72fb52353fa5a60376dd2481a82db045098005795c6aa15191312aba94f48',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/dde72fb52353fa5a60376dd2481a82db045098005795c6aa15191312aba94f48',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/b1f1a828c42fdcfc130bd2741da62685bc0520a301d55c8d61218eaf58958b69',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/8ab6403541933f03512ee73fdc31927f9570138262f30631e55ba5a1eb7e4ab7',
-                'https://dx.walmart.com/documents/product/Walmart%20Cloud%20Native%20Platform%20(WCNP)/30486b6a3ff1e5e27fd8d1fb58938db9fb215cd19169403983d7fe6c77a6809e'
-            ]
+            links = [base_url]
+
             visited_links = []
             link_to_text_dict = dict()
             for index, cur_link in enumerate(links):

@@ -13,11 +13,11 @@ log = logging.getLogger(__name__)
 data_source_bp = Blueprint('data_source_blueprint', __name__)
 
 
-@data_source_bp.route('/file', methods=['POST'])
+@data_source_bp.route('/file/<project_id>', methods=['POST'])
 @inject
-def save_file_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+def save_file_data_source(project_id: str, data_source_service: DataSourceService = Provide[Container.data_source_service]):
     file = request.files['file']
-    create_file_data_source_request = DataSourceModel.from_file_request(request.form['project_id'])
+    create_file_data_source_request = DataSourceModel.from_file_request(project_id)
 
     saved_data_source = data_source_service.save_data_source(create_file_data_source_request, file)
 
@@ -28,6 +28,16 @@ def save_file_data_source(data_source_service: DataSourceService = Provide[Conta
 @inject
 def save_website_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
     create_data_source_request = DataSourceModel.from_website_request(request.get_json())
+
+    saved_data_source = data_source_service.save_data_source(create_data_source_request)
+
+    return jsonify(saved_data_source)
+
+
+@data_source_bp.route('/text', methods=['POST'])
+@inject
+def save_text_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+    create_data_source_request = DataSourceModel.from_text_request(request.get_json())
 
     saved_data_source = data_source_service.save_data_source(create_data_source_request)
 

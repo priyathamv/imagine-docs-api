@@ -16,12 +16,14 @@ class DataSourceDTO(DataSourceModel):
     @classmethod
     def from_website_request(cls, request_json):
         return cls(request_json['project_id'],
-            SourceType.WEBSITE,
-            request_json['source_link'],
-            request_json['is_auth_enabled'],
-            request_json['is_recursive'],
-            request_json['rules'],
-            JobStatus(request_json['job_status']),
-            request_json['id'],
-            request_json['created_at'],
-            request_json['updated_at'])
+                   SourceType.WEBSITE,
+                   request_json['source_link'],
+                   request_json['is_auth_enabled'],
+                   request_json['is_recursive'],
+                   request_json['rules'],
+                   None,
+                   None,
+                   JobStatus(request_json['job_status']),
+                   request_json['id'],
+                   request_json['created_at'],
+                   request_json['updated_at'])
