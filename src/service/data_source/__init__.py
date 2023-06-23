@@ -23,8 +23,7 @@ class DataSourceService(BaseService):
 
     def save_data_source(self, data_source: DataSourceModel, file=None):
         if file is not None:
-            file_link = 'file_link_here2'  # self.file_service.upload_file(file)
-            data_source.source_link = file_link
+            data_source.source_link = self.file_service.upload_file('test', file)  # data_source.project_id, file)
 
         data_source_dict = DataSourceModel.to_dict(data_source)
 

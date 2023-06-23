@@ -12,17 +12,17 @@ from src.model.data_source.source_type import SourceType
 class DataSourceModel:
     project_id: str
     source_type: SourceType = field(metadata=config(encoder=lambda x: x.value, decoder=SourceType))
-    source_link: str
-    is_auth_enabled: bool  # Need to revisit how to handle authenticated websites
-    is_recursive: bool
-    rules: List[Rule]
-    text: Optional[str]
+    source_link: Optional[str]
+    is_auth_enabled: Optional[bool]  # Need to revisit how to handle authenticated websites
+    is_recursive: Optional[bool]
+    rules: Optional[List[Rule]]
     title: Optional[str]
+    text: Optional[str]
     job_status: JobStatus = field(metadata=config(encoder=lambda x: x.value, decoder=JobStatus))
 
     @classmethod
     def from_file_request(cls, project_id: str):
-        return cls(project_id, SourceType.FILE, '', False, False, [], None, None, JobStatus.NOT_INITIATED)
+        return cls(project_id, SourceType.FILE, None, None, None, [], None, None, JobStatus.NOT_INITIATED)
 
     @classmethod
     def from_website_request(cls, request_json):
@@ -32,5 +32,6 @@ class DataSourceModel:
 
     @classmethod
     def from_text_request(cls, request_json):
-        return cls(request_json['project_id'], SourceType.PLAIN_TEXT, '', False, False, [], request_json['text'],
-                   request_json['title'], JobStatus.NOT_INITIATED)
+        return cls(request_json['project_id'], SourceType.PLAIN_TEXT, None,
+                   None, None, [], request_json['title'],
+                   request_json['text'], JobStatus.NOT_INITIATED)

@@ -10,6 +10,14 @@ from src.service.training_service import TrainingService
 training_bp = Blueprint('training_blueprint', __name__)
 
 
+@training_bp.route('/test', methods=['GET'])
+@inject
+def test(training_service: TrainingService = Provide[Container.training_service]):
+    output = training_service.train_file_data()
+
+    return jsonify(output)
+
+
 @training_bp.route('/upload-files/<project_id>', methods=['POST'])
 @inject
 def upload_files(project_id, training_service: TrainingService = Provide[Container.training_service]):
@@ -37,11 +45,6 @@ def train(project_id, training_service: TrainingService = Provide[Container.trai
 def response_stream(gpt_stream_service: GPTStreamService = Provide[Container.gpt_stream_service]):
     project_id: str = request.args.get('project_id')
     query: str = request.args.get('query')
+    response = gpt_stream_service.create_context(project_id, query)
 
-    def event_stream():
-        for line in gpt_stream_service.create_context(project_id, query):
-            text = line.choices[0].text
-            if len(text):
-                yield text
-
-    return Response(event_stream(), mimetype='text/event-stream')
+    return jsonify({'data': response})

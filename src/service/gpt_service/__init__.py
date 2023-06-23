@@ -1,10 +1,11 @@
 import os
 from typing import List
 import tiktoken
+from langchain.embeddings import OpenAIEmbeddings
 
 from src.configuration.gpt_client import GPTClient
-from src.constant import OPENAI_EMBEDDING_ENGINE, OPENAI_EMBEDDING_MODEL, OPENAI_COMPLETION_MODEL, OPENAI_COMPLETION_ENGINE
-from src.model.content.content_model import ContentModel
+from src.constant import OPENAI_DEPLOYMENT_NAME, OPENAI_MODEL
+from src.model.document.document_model import DocumentModel
 from src.service.base_service import BaseService
 
 
@@ -14,31 +15,31 @@ class GPTService(BaseService):
         super().__init__()
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
         self.openai = gpt_client.get_instance()
-        self.embedding_model = os.environ.get(OPENAI_EMBEDDING_MODEL) # Probably not needed
-        self.embedding_engine = os.environ.get(OPENAI_EMBEDDING_ENGINE)
-        self.completion_model = os.environ.get(OPENAI_COMPLETION_MODEL)
-        self.completion_engine = os.environ.get(OPENAI_COMPLETION_ENGINE)
+        self.deployment_name = os.environ.get(OPENAI_DEPLOYMENT_NAME)
+        self.model = os.environ.get(OPENAI_MODEL)
 
     def extract_content_list(self, data_source_id: str, link_to_page_content_dict):
-        content_list: List[ContentModel] = []
+        content_list: List[DocumentModel] = []
         for link, page_content in link_to_page_content_dict.items():
             content_to_token_tuples = self.get_content_to_token_tuples(page_content, 500)
 
             if len(content_to_token_tuples) > 0:
                 for (chunk, token_count) in content_to_token_tuples:
                     embedding = self.create_embeddings(chunk)
-                    content_list.append(ContentModel(data_source_id, chunk, token_count, embedding))
+                    content_list.append(DocumentModel(data_source_id, chunk, token_count, embedding))
 
         return content_list
 
     # Azure OpenAI does not support multiple inputs, so input can only be a string
     # TODO: The maximum length of input text for our embedding models is 2048 tokens (equivalent to around 2-3 pages of text).
-    def create_embeddings(self, input: str):
-        response = self.openai.Embedding.create(
-            input=input,
-            engine=self.embedding_engine
-        )
-        return response['data'][0]['embedding']
+    def create_embeddings(self, text: str):
+        embeddings = OpenAIEmbeddings(deployment=self.deployment_name)
+        return embeddings.embed_query(text)
+        # response = self.openai.Embedding.create(
+        #     input=input,
+        #     engine=self.deployment_name
+        # )
+        # return response['data'][0]['embedding']
 
     # Split the text into chunks of a maximum number of tokens
     def get_content_to_token_tuples(self, text: str, max_tokens: int):
@@ -81,21 +82,14 @@ class GPTService(BaseService):
             .replace('  ', ' ') \
             .replace('  ', ' ')
 
-    # def normalize_text(self, s):
-    #     s = re.sub(r'\s+',  ' ', s).strip()
-    #     s = re.sub(r". ,","",s)
-    #     # remove all instances of multiple spaces
-    #     s = s.replace("..",".")
-    #     s = s.replace(". .",".")
-    #     s = s.replace("\n", "")
-    #     s = s.strip()
-    #
-    #     return s
+    def get_completion(self, prompt) -> str:
+        completion = self.openai.Completion.create(deployment_id='cally-text-davinci-003',
+                                                   model='text-davinci-003',
+                                                   prompt=prompt,
+                                                   max_tokens=1000,
+                                                   temperature=0.5)
 
-    def get_completion(self, prompt):
-        return self.openai.Completion.create(model=self.completion_model,
-                                             engine=self.completion_engine,
-                                             prompt=prompt,
-                                             max_tokens=512,
-                                             temperature=0,
-                                             stream=True)
+        return completion['choices'][0]['text']
+
+    def get_token_count(self, content):
+        return len(self.tokenizer.encode(content))

@@ -7,12 +7,12 @@ from storage3.utils import StorageException
 from src.configuration.supabase_client import SupabaseClient
 from src.constant import LINK_TO_PAGE_CONTENT_DICT
 from src.dto.data_source.data_source_dto import DataSourceDTO
-from src.model.content.content_model import ContentModel
+from src.model.document.document_model import DocumentModel
 from src.model.data_source.data_source_model import DataSourceModel
 from src.model.data_source.source_type import SourceType
 from src.model.project.job_status import JobStatus
 from src.service.base_service import BaseService
-from src.service.content import ContentService
+from src.service.document import DocumentService
 from src.service.data_source import DataSourceService
 from src.service.gpt_service import GPTService
 from src.service.scheduler.file_upload_scheduler import FileUploadScheduler
@@ -27,27 +27,47 @@ class TrainingService(BaseService):
 
     def __init__(self, file_service: FileService, web_scraper_service: WebScraperService, gpt_service: GPTService,
                  supabase_client: SupabaseClient, data_source_service: DataSourceService,
-                 content_service: ContentService, file_upload_scheduler: FileUploadScheduler):
+                 document_service: DocumentService, file_upload_scheduler: FileUploadScheduler):
         self.file_service = file_service
         self.web_scraper_service = web_scraper_service
         self.gpt_service = gpt_service
         self._supabase = supabase_client.get_instance()
         self.data_source_service = data_source_service
-        self.content_service = content_service
+        self.document_service = document_service
         self.file_upload_scheduler = file_upload_scheduler
         super().__init__()
 
     def train(self, project_id: str):
-        data_sources = self.data_source_service.find_by_project_id(project_id)
+        data_sources: List[DataSourceDTO] = self.data_source_service.find_by_project_id(project_id)
 
-        new_data_sources = data_sources #list(filter(lambda cur_data_source: cur_data_source.job_status == JobStatus.NOT_INITIATED, data_sources))
+        new_data_sources: List[
+            DataSourceDTO] = data_sources  # list(filter(lambda cur_data_source: cur_data_source.job_status == JobStatus.NOT_INITIATED, data_sources))
 
+        status: bool = False
         for data_source in new_data_sources:
             if data_source.source_type == SourceType.WEBSITE:
-                self.train_website_data(data_source)
+                status = self.train_website_data(data_source)
             else:
-                pass
-                # self.train_files_data(data_source)
+                status = self.train_file_data(data_source)
+                if status:
+                    self.data_source_service.update_data_source_status(data_source.id, JobStatus.SUCCESSFUL)
+
+        return status
+
+    def train_file_data(self, data_source: DataSourceDTO):
+        documents = self.file_service.get_documents_from_file(data_source.source_link)
+
+        document_list: List[DocumentModel] = []
+        for document in documents:
+            data_source_id = data_source.id
+            content = document.page_content
+            token_count = self.gpt_service.get_token_count(document.page_content)
+            metadata = document.metadata
+            embeddings = self.gpt_service.create_embeddings(document.page_content)
+            document_list.append(DocumentModel(data_source_id, content, token_count, metadata, embeddings))
+
+        save_status = self.document_service.save_all(document_list)
+        return save_status
 
     def train_files_data(self, files, project_id):
         self.logger.debug('Uploading files...')
@@ -97,14 +117,14 @@ class TrainingService(BaseService):
         self.data_source_service.update_data_source_status(data_source_id, JobStatus.IN_PROGRESS)
 
         # Step 2: Fetch all the links to content dictionary for the given website
-        link_to_page_content_dict = self.web_scraper_service.scrape_website(data_source_request) # LINK_TO_PAGE_CONTENT_DICT
+        link_to_page_content_dict = LINK_TO_PAGE_CONTENT_DICT  # self.web_scraper_service.scrape_website(data_source_request)
 
         # Step 3: Train the model with the content extracted
-        content_list: List[ContentModel] = self.gpt_service.extract_content_list(data_source_id,
-                                                                                 link_to_page_content_dict)
+        document_list: List[DocumentModel] = self.gpt_service.extract_content_list(data_source_id,
+                                                                                   link_to_page_content_dict)
 
         # Step 4: Save contents in the database
-        content_save_status = self.content_service.save_all(content_list)
+        content_save_status = self.document_service.save_all(document_list)
 
         # Step 5: Update Data Source job status to SUCCESSFUL
         job_status = JobStatus.SUCCESSFUL if content_save_status else JobStatus.FAILED

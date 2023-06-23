@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, Undefined
 
-from src.model.content.content_model import ContentModel
+from src.model.document.document_model import DocumentModel
 
 
 @dataclass_json(undefined=Undefined.EXCLUDE)
 @dataclass
-class ContentDTO(ContentModel):
+class DocumentDTO(DocumentModel):
     id: str
-    created_at: str
-    updated_at: str
