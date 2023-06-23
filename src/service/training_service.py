@@ -1,12 +1,11 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 from storage3.utils import StorageException
 
 from src.configuration.supabase_client import SupabaseClient
-from src.constant import LINK_TO_PAGE_CONTENT_DICT, MAX_WORKERS
+from src.constant import LINK_TO_PAGE_CONTENT_DICT
 from src.dto.data_source.data_source_dto import DataSourceDTO
 from src.model.document.document_model import DocumentModel
 from src.model.data_source.data_source_model import DataSourceModel

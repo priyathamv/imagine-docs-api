@@ -27,3 +27,18 @@ class DataSourceDTO(DataSourceModel):
                    request_json['id'],
                    request_json['created_at'],
                    request_json['updated_at'])
+
+    @classmethod
+    def from_text_request(cls, request_json):
+        return cls(request_json['project_id'],
+                   SourceType.PLAIN_TEXT,
+                   '',
+                   False,
+                   False,
+                   [],
+                   request_json['text'],
+                   request_json['title'],
+                   JobStatus(request_json['job_status']),
+                   request_json['id'],
+                   request_json['created_at'],
+                   request_json['updated_at'])

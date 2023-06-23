@@ -46,8 +46,28 @@ def save_text_data_source(data_source_service: DataSourceService = Provide[Conta
 
 @data_source_bp.route('/', methods=['PUT'])
 @inject
-def update_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+def save_text_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+    create_data_source_request = DataSourceModel.from_text_request(request.get_json())
+
+    saved_data_source = data_source_service.save_data_source(create_data_source_request)
+
+    return jsonify(saved_data_source)
+
+
+@data_source_bp.route('/website', methods=['PUT'])
+@inject
+def update_website_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
     update_data_source_request = DataSourceDTO.from_website_request(request.get_json())
+
+    updated_data_source = data_source_service.update_data_source(update_data_source_request)
+
+    return jsonify(updated_data_source)
+
+
+@data_source_bp.route('/text', methods=['PUT'])
+@inject
+def update_text_data_source(data_source_service: DataSourceService = Provide[Container.data_source_service]):
+    update_data_source_request = DataSourceDTO.from_text_request(request.get_json())
 
     updated_data_source = data_source_service.update_data_source(update_data_source_request)
 

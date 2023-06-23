@@ -30,7 +30,7 @@ RESOURCE_NOT_FOUND = 'Resource not found'
 INVALID_REQUEST = 'Invalid request'
 INTERNAL_SERVER_ERROR = 'Internal Server Error'
 
-TEMP_FOLDER = '/Temp/'
+TEMP_FOLDER = '/tmp/'
 
 MAX_WORKERS = 4
 

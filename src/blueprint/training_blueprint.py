@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import request, Blueprint, Response
 from flask.json import jsonify
 from dependency_injector.wiring import Provide, inject
 
@@ -17,6 +17,7 @@ def test(training_service: TrainingService = Provide[Container.training_service]
 
     return jsonify(output)
 
+
 @training_bp.route('/upload-files/<project_id>', methods=['POST'])
 @inject
 def upload_files(project_id, training_service: TrainingService = Provide[Container.training_service]):
@@ -28,6 +29,7 @@ def upload_files(project_id, training_service: TrainingService = Provide[Contain
     output = training_service.train_files_data(files, project_id)
 
     return jsonify({'result': output})
+
 
 @training_bp.route('/train/<project_id>', methods=['POST'])
 @inject
